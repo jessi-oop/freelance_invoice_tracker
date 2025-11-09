@@ -8,7 +8,17 @@ def addCustomer():
     phoneNum = input("Enter customer phone number: ")
 
     filePath = 'CustomerRecords.csv'
-    fieldNames = ['Name', 'Email', 'PhoneNum']
+    fieldNames = ['ID','Name', 'Email', 'PhoneNum']
+
+    nextID = 1
+    if os.path.exists(filePath): #For assigning id to customers
+        with open(filePath, 'r') as file:
+            reader = csv.DictReader(file, delimiter='|')
+            ids = [int(row['ID']) for row in reader if row['ID'].isdigit()] #Get the ID from the ID row in the list, check if digit, then casts it from string to int
+            if ids: #Check if ids has values
+                nextID = max(ids) + 1 #Increment the highest value in ids with 1
+
+    customerID = f"{nextID:03d}"
 
     if not os.path.exists(filePath):
         with open(filePath, 'w', newline='') as file:
@@ -18,7 +28,7 @@ def addCustomer():
 
     with open(filePath, 'a', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldNames, delimiter='|')
-        writer.writerow({'Name': customerName, 'Email': email, 'PhoneNum': phoneNum})
+        writer.writerow({'ID': customerID, 'Name': customerName, 'Email': email, 'PhoneNum': phoneNum})
 
     print(f"Successfuly added: {customerName}")
 
@@ -34,7 +44,7 @@ def deleteCustomer():
         print("File does not exist!")
         return
     
-    nameToDelete = input("Enter name of customer to delete: ")
+    targetID = input("Enter customer ID for deletion: ")
 
     rows = [] #Initialize a list that will be used to store the content of the file
     with open(filePath, 'r') as file:
@@ -43,19 +53,42 @@ def deleteCustomer():
 
     originalCount = len(rows) #Will be used as reference if there is a row deleted from the content
     rows = [row for row in rows  #Iterates through each customer record in the list
-            if row['Name'].strip().lower() != nameToDelete.lower] #Gets the user input and match if the target customer to delete match any of the rows. Keeps only the rows that does not match the target name
+            if row['ID'] != targetID] #Gets the user input and match if the target customer to delete match any of the rows. Keeps only the rows that does not match the target ID
     
     if len(rows) == originalCount: #Verifies if the rows equals to original count. If yes, meaning customer does not exist in the records
-        print(f"Unable to delete. Customer {nameToDelete} does not exist.")
+        print(f"Unable to delete. Customer {targetID} does not exist.")
         return
     
     with open(filePath, 'w', newline='') as file: #If there is a deleted row, rewrites the new file with the remaining content within the rows list
-        fieldNames = ['Name', 'Email', 'PhoneNum']
+        fieldNames = ['ID','Name', 'Email', 'PhoneNum']
         writer = csv.DictWriter(file, fieldnames=fieldNames, delimiter='|')
         writer.writeheader()
         writer.writerows(rows)
 
-    print(f"Customer {nameToDelete} successfully deleted!")
+    print(f"Customer with ID {targetID} is successfully deleted!")
+
+def editCustomerDetails():
+    filePath = 'CustomerRecords.csv'
+
+    if not os.path.exists(filePath):
+        print("File does not exist!")
+        return
+
+    rows = []
+    with open(filePath, 'r') as file:
+        reader = csv.DictReader(file, delimiter='|')
+        rows = list(reader)
+
+    originalCount = len(rows)
+
+    print("---Current Records---")
+    for content in rows:
+        print(content.split())
+
+    print("---Enter ")
+
+    
+
 
 while True:
     print("===Choose an action===")
