@@ -73,22 +73,58 @@ def editCustomerDetails():
     if not os.path.exists(filePath):
         print("File does not exist!")
         return
+    
+    targetToEdit = input("Enter ID of customer you want to edit: ")
 
     rows = []
     with open(filePath, 'r') as file:
         reader = csv.DictReader(file, delimiter='|')
         rows = list(reader)
 
-    originalCount = len(rows)
+    found = False
+    for row in rows:
+        if row['ID'] == targetToEdit:
+            found = True
 
-    print("---Current Records---")
-    for content in rows:
-        print(content.split())
+            while True:
+                print("\n---Choose what to edit---")
+                print("[1] Edit Customer Name: ")
+                print("[2] Edit customer email")
+                print("[3] Edit customer phone number")
+                print("[4] Done")
+                choice = int(input("Enter your choice: "))
 
-    print("---Enter ")
+                match choice:
+                    case 1:
+                        updatedName = input("Enter new name: ").strip()
+                        row['Name'] = updatedName
+                        print(f"Customer name changed to {updatedName}")
+                    case 2:
+                        updatedEmail = input("Enter new email: ")
+                        row['Email'] = updatedEmail
+                        print(f"Customer email changed to {updatedEmail}")
+                    case 3:
+                        updatedPhoneNum = input("Enter new phone number: ")
+                        row['PhoneNum'] = updatedPhoneNum
+                        print(f"Customer phone number updated to {updatedPhoneNum}")
+                    case 4:
+                        print("Actions done!")
+                        break
+                    case _:
+                        print("Invalid input! Please choose from 1-4")
+            break
 
+    if not found:
+        print(f"Customer with id {targetToEdit} does not exist")
+        return
+
+    with open(filePath, 'w', newline='') as file:
+        fieldNames = ['ID', 'Name', 'Email', 'PhoneNum']
+        writer = csv.DictWriter(file, fieldnames=fieldNames, delimiter='|')
+        writer.writeheader()
+        writer.writerows(rows)
+    print("Changes saved successfully!")
     
-
 
 while True:
     print("===Choose an action===")
@@ -104,6 +140,10 @@ while True:
             addCustomer()
         case 2:
             viewCustomerRecords()
+        case 3:
+            editCustomerDetails()
+        case 4:
+            deleteCustomer()
         case 5:
             print("Actions done!")
             break
